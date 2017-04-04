@@ -11,6 +11,8 @@ class RepoGraph:
         self.repo = repo
 
     def parse_text(self, speaker, issue_number, text):
+        if text is None:
+            return
         for referencing_issue in re.findall(r'#(\d+)', text):
             self.graph.add_edge(
                 issue_number, referencing_issue, referencing=True
@@ -29,6 +31,7 @@ class RepoGraph:
             
     def parse_issue(self, issue):
         username, issue_number = issue.user.login, issue.number
+        print("parsing issues of %d" % (issue_number,))
         self.graph.add_node(username, _type='user')
         self.graph.add_node(issue_number, _type='issue',
                             is_pull_request=issue.pull_request is not None)
