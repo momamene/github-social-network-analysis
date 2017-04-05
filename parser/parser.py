@@ -19,7 +19,7 @@ class RepoGraph:
                 referencing=True,
                 user=speaker
             )
-        for mentioning_user in re.findall(r'@(\w+)', text):
+        for mentioning_user in re.findall(r'@([^ ]+)', text):
             self.graph.add_edge(
                 speaker, mentioning_user,
                 mentioning=True,
