@@ -60,13 +60,16 @@ def draw(G):
         edgelist=G.edges(),
         node_size=500,
         width=2,
-        alpha=1,
+        alpha=0.5,
         edge_color='g'
     )
 
     # Labeling 
     labels = {
-        node: r'%s' % (node,)
+        node: (
+            node + '(RR)' if graph.node[node].get('is_pull_request')
+            else node
+        )
         for node
         in graph.nodes()
     }
