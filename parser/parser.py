@@ -15,27 +15,39 @@ class RepoGraph:
             return
         for referencing_issue in re.findall(r'#(\d+)', text):
             self.graph.add_edge(
-                issue_number, referencing_issue, referencing=True
+                issue_number, referencing_issue,
+                referencing=True,
+                user=speaker
             )
         for mentioning_user in re.findall(r'@(\w+)', text):
             self.graph.add_edge(
-                speaker, mentioning_user, mentioning=True
+                speaker, mentioning_user,
+                mentioning=True,
+                issue_number=issue_number
             )
 
     def parse_comment(self, issue, comment):
-        username, issue_number = comment.user.login, issue.number
+        username, issue_number = comment.user.login, ('#%d' % (issue.number,))
         if username != issue.user.login:
             self.graph.add_node(username, _type='user')
-            self.graph.add_edge(username, issue_number, commenter=True)
+            self.graph.add_edge(
+                username, issue_number,
+                commenter=True,
+                created_at=comment.created_at.isoformat()
+            )
         self.parse_text(username, issue_number, comment.body)
             
     def parse_issue(self, issue):
-        username, issue_number = issue.user.login, issue.number
-        print("parsing issues of %d" % (issue_number,))
+        username, issue_number = issue.user.login, ('#%d' % (issue.number,))
+        print("parsing issues of %s" % (issue_number,))
         self.graph.add_node(username, _type='user')
         self.graph.add_node(issue_number, _type='issue',
                             is_pull_request=issue.pull_request is not None)
-        self.graph.add_edge(username, issue_number, issuer=True)
+        self.graph.add_edge(
+            username, issue_number,
+            issuer=True,
+            created_at=issue.created_at.isoformat()
+        )
         self.parse_text(username, issue_number, issue.body)
         for comment in issue.get_comments():
             self.parse_comment(issue, comment)
