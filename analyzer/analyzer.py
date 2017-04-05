@@ -22,7 +22,20 @@ def draw(G):
         label
         for label
         in graph.node
-        if graph.node[label]['_type'] == 'issue'
+        if (
+                graph.node[label]['_type'] == 'issue' and
+                not graph.node[label].get('is_pull_request')
+        )
+    ]
+
+    pr_list = [
+        label
+        for label
+        in graph.node
+        if (
+                graph.node[label]['_type'] == 'issue' and
+                graph.node[label].get('is_pull_request')
+        )
     ]
 
     pos = {}
@@ -33,11 +46,15 @@ def draw(G):
         in enumerate(user_list)
     )
     pos.update(
-        (node, (2, index))
+        (node, (2, index + len(pr_list) + 1))
         for index, node
         in enumerate(issue_list)
     )
-
+    pos.update(
+        (node, (2, index))
+        for index, node
+        in enumerate(pr_list)
+    )
 
     nx.draw_networkx_nodes(
         G, pos,
@@ -50,6 +67,14 @@ def draw(G):
     nx.draw_networkx_nodes(
         G, pos,
         nodelist=issue_list,
+        node_color='g',
+        node_size=500,
+        alpha=0.8
+    )
+
+    nx.draw_networkx_nodes(
+        G, pos,
+        nodelist=pr_list,
         node_color='b',
         node_size=500,
         alpha=0.8
@@ -61,7 +86,7 @@ def draw(G):
         node_size=500,
         width=2,
         alpha=0.5,
-        edge_color='g'
+        edge_color='#000000'
     )
 
     # Labeling 
