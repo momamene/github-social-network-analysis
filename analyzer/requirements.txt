@@ -1,0 +1,4 @@
+networkx
+ipdb
+ipython
+matplotlib

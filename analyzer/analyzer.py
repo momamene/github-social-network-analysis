@@ -1,6 +1,7 @@
 import settings
 import networkx as nx
-    
+import matplotlib.pyplot as plt
+
 
 def read_graph():
     path = settings.GEXF_PATH
