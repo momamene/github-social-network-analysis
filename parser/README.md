@@ -1,3 +1,7 @@
+### Prerequisite
+
+* Python 3.6.0
+
 ### settings.py properties
 
 * CLIENT_ID ( Register to [this](https://github.com/settings/applications/new) )
