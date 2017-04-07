@@ -61,7 +61,7 @@ def draw(G):
         nodelist=user_list,
         node_color='r',
         node_size=500,
-        alpha=0.8
+        alpha=0.5
     )
 
     nx.draw_networkx_nodes(
@@ -69,7 +69,7 @@ def draw(G):
         nodelist=issue_list,
         node_color='g',
         node_size=500,
-        alpha=0.8
+        alpha=0.5
     )
 
     nx.draw_networkx_nodes(
@@ -77,7 +77,7 @@ def draw(G):
         nodelist=pr_list,
         node_color='b',
         node_size=500,
-        alpha=0.8
+        alpha=0.5
     )
 
     nx.draw_networkx_edges(
@@ -85,7 +85,7 @@ def draw(G):
         edgelist=G.edges(),
         node_size=500,
         width=2,
-        alpha=0.5,
+        alpha=1,
         edge_color='#000000'
     )
 
@@ -110,8 +110,10 @@ def draw(G):
         os.makedirs(settings.DIST_PATH)
 
     plt.axis('off')
+
+    filename = os.path.basename(settings.GEXF_PATH).replace('gexf', 'png')
     plt.savefig(
-        settings.DIST_PATH + '/' + settings.DRAWING_FILENAME
+        settings.DIST_PATH + '/' + filename
     )
 
 if __name__ == "__main__":
