@@ -42,7 +42,7 @@ class RepoGraph:
         print("parsing issues of %s" % (issue_number,))
         self.G.add_node(username, _type='user')
         self.G.add_node(issue_number, _type='issue',
-                            is_pull_request=issue.pull_request is not None)
+                        is_pull_request=issue.pull_request is not None)
         self.G.add_edge(
             username, issue_number,
             issuer=True,
