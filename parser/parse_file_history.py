@@ -3,13 +3,29 @@ import sys
 import json
 import matplotlib.pyplot as plt
 import math
-
+from collections import defaultdict
 from networkx.algorithms import bipartite
+import random
+import numpy as np
+from networkx.algorithms.community.asyn_lpa import asyn_lpa_communities
+from collections import Counter
 
+
+def jaccard(G, u, v):
+    unbrs = set(G[u])
+    vnbrs = set(G[v])
+    return float(len(unbrs & vnbrs)) / len(unbrs | vnbrs)
+
+def common_neighbor(G, u, v):
+    unbrs = set(G[u])
+    vnbrs = set(G[v])
+    return len(unbrs & vnbrs)
 
 if __name__ == "__main__":
+
+    # Parse dataset from path
+
     json_path = sys.argv[1]
-    png_path = sys.argv[2]
     B = nx.Graph()
     with open(json_path) as f:
         for raw_data in f:
@@ -20,34 +36,56 @@ if __name__ == "__main__":
                 B.add_node(commit, bipartite=1)
                 B.add_edge(filename, commit)
 
-    print("Bipartite Graph created")
+    # Split dataset into training data and test data
 
-    filenames = [
-        node
-        for node, attributes
-        in B.node.items()
-        if attributes['bipartite'] == 0
-    ]
+    validation_ratio = 0.2
+    filenames = {
+        n
+        for n, d
+        in B.nodes(data=True)
+        if d['bipartite']==0
+    }
+    commits = set(B) - filenames
 
-    G = bipartite.weighted_projected_graph(B, filenames, ratio=True)
-    print("Projected Graph created")
+    # train data
+    train_nodes_count = int(len(commits) * (1 - validation_ratio))
+    train_commits = random.sample(commits, train_nodes_count)
 
-    # pos = nx.spring_layout(G, scale=100, iterations=50)
-    pos = nx.random_layout(G)
-    print("Nodes are positioned.")
+    train_filenames = list(
+        n1
+        for n1, n2
+        in B.edges()
+        if n2 in train_commits
+    )
 
-    node_labels = { filename: filename for filename in filenames }
-    nx.draw_networkx_labels(G, pos, node_labels, font_size=2)
+    B_train = B.subgraph(train_filenames + train_commits)
 
-    node_size = [
-        math.log10(degree + 2) * 100 for filename, degree in G.degree().items()
-    ]
-    nx.draw_networkx_nodes(G, pos, node_size=node_size)
-    print("Nodes are drawn.")
+    G_train = bipartite.generic_weighted_projected_graph(
+        B_train, train_commits, weight_function=common_neighbor
+    )
 
-    weights = [d['weight'] * 100 for (u,v,d) in G.edges(data=True)]
-    nx.draw_networkx_edges(G, pos, edge_color=weights, width=weights)
-    print("Edges are drawn.")
+    communities = list(asyn_lpa_communities(G_train, 'weight'))
 
-    plt.savefig(png_path)
-    print("Graph picture are saved.")
+    print(communities)
+
+    '''
+    filename_labels = {
+        filename: index
+        for index, community
+        in enumerate(communities)
+        for filename
+        in community
+    }
+
+    # test data
+    test_commits = commits - set(train_commits)
+
+    for commit in test_commits:
+        freq = Counter()
+        for filename in B[commit]:
+            if filename not in train_filenames:
+                continue
+            freq.update({filename_labels[filename]: 1})
+        if len(freq) > 1:
+            print(commit, freq)
+    '''
